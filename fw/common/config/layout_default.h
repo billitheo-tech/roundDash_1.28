@@ -3,6 +3,43 @@
 // Встроенная раскладка: таблица сигналов и по экрану каждого типа. Фоны (bg_*.bin) и шрифты
 // (*.fnt) лежат в базовом образе media (fw/media). Нет файла - экран рисуется примитивами
 // и встроенным шрифтом, так что приборка работает и при пустом разделе media.
+#if RG_BOARD_1_28
+// ESP32-S3-Touch-LCD-1.28 (240 px): the same screens with offsets halved, the built-in fonts
+// (14/28/48) and no images: the media images and fonts are drawn for 480 px.
+static const char RG_LAYOUT_DEFAULT_JSON[] =
+    "{\"version\":2,\"signals\":[{\"name\":\"rpm\",\"title\":\"RPM\",\"unit\":\"x1000\",\"min\":0,\"max\":8000,\"decimals\":0,\"zones\":[{\"from\":6500,\"to\":8000,\"color\":\"#ff3030\"}]},"
+    "{\"name\":\"coolant\",\"title\":\"COOLANT\",\"unit\":\"C\",\"min\":50,\"max\":130,\"decimals\":0,\"zones\":[{\"from\":50,\"to\":70,\"color\":\"#4080ff\"},{\"from\":70,\"to\":105,\"color\":\"#00c060\"},{\"from\":105,\"to\":130,\"color\":\"#ff3030\"}]},"
+    "{\"name\":\"speed\",\"title\":\"SPEED\",\"unit\":\"km/h\",\"min\":0,\"max\":240,\"decimals\":0},"
+    "{\"name\":\"g_lon\",\"title\":\"G LON\",\"unit\":\"g\",\"min\":-1.5,\"max\":1.5,\"decimals\":2},"
+    "{\"name\":\"g_lat\",\"title\":\"G LAT\",\"unit\":\"g\",\"min\":-1.5,\"max\":1.5,\"decimals\":2},"
+    "{\"name\":\"g_vert\",\"title\":\"G VERT\",\"unit\":\"g\",\"min\":-1,\"max\":1,\"decimals\":2},"
+    "{\"name\":\"g_tot\",\"title\":\"G\",\"unit\":\"g\",\"min\":0,\"max\":2,\"decimals\":2},"
+    "{\"name\":\"iat\",\"title\":\"IAT\",\"unit\":\"C\",\"min\":-40,\"max\":120,\"decimals\":0},"
+    "{\"name\":\"map\",\"title\":\"MAP\",\"unit\":\"kPa\",\"min\":0,\"max\":250,\"decimals\":0},"
+    "{\"name\":\"oil_press\",\"title\":\"OIL\",\"unit\":\"bar\",\"min\":0,\"max\":8,\"decimals\":2},"
+    "{\"name\":\"oil_temp\",\"title\":\"OIL T\",\"unit\":\"C\",\"min\":0,\"max\":150,\"decimals\":0},"
+    "{\"name\":\"vbat\",\"title\":\"VBAT\",\"unit\":\"V\",\"min\":8,\"max\":16,\"decimals\":1},"
+    "{\"name\":\"fuel_level\",\"title\":\"FUEL\",\"unit\":\"%\",\"min\":0,\"max\":100,\"decimals\":0},"
+    "{\"name\":\"lambda\",\"title\":\"LAMBDA\",\"min\":0.6,\"max\":1.4,\"decimals\":2},"
+    "{\"name\":\"tps\",\"title\":\"TPS\",\"unit\":\"%\",\"min\":0,\"max\":100,\"decimals\":0},"
+    "{\"name\":\"afr\",\"title\":\"AFR\",\"min\":10,\"max\":20,\"decimals\":1,\"zones\":[{\"from\":10,\"to\":11.5,\"color\":\"#ffb000\"},{\"from\":11.5,\"to\":15,\"color\":\"#00c060\"},{\"from\":15,\"to\":20,\"color\":\"#ff3030\"}]}],\"screens\":[{\"type\":\"dial\",\"signal\":\"rpm\",\"label_div\":1000,\"ticks\":41,\"major_every\":5,\"needle_color\":\"#ff8000\",\"widgets\":[{\"type\":\"text\",\"text\":\"RPM\",\"y\":-45,\"font\":\"14\"},"
+    "{\"type\":\"value\",\"y\":30,\"font\":\"28\",\"decimals\":2,\"div\":1000},"
+    "{\"type\":\"text\",\"text\":\"x1000\",\"y\":55,\"font\":\"14\"}],\"label_font\":\"14\"},"
+    "{\"type\":\"ring\",\"signal\":\"coolant\",\"color\":\"#00c0ff\",\"widgets\":[{\"type\":\"text\",\"text\":\"COOLANT\",\"y\":-35,\"font\":\"14\"},"
+    "{\"type\":\"value\",\"zone_color\":true,\"font\":\"48\"},"
+    "{\"type\":\"text\",\"text\":\"C\",\"y\":30,\"font\":\"14\"}]},"
+    "{\"type\":\"dial\",\"signal\":\"afr\",\"ticks\":41,\"major_every\":8,\"widgets\":[{\"type\":\"text\",\"text\":\"AFR\",\"y\":-45,\"font\":\"14\"},"
+    "{\"type\":\"value\",\"y\":30,\"font\":\"28\",\"zone_color\":true},"
+    "{\"type\":\"value\",\"signal\":\"lambda\",\"y\":56,\"font\":\"14\",\"decimals\":2},"
+    "{\"type\":\"text\",\"text\":\"LAMBDA\",\"y\":70,\"font\":\"14\"}],\"label_font\":\"14\"},"
+    "{\"type\":\"number\",\"signal\":\"speed\",\"widgets\":[{\"type\":\"text\",\"text\":\"SPEED\",\"y\":-42,\"font\":\"14\"},"
+    "{\"type\":\"value\",\"font\":\"48\"},"
+    "{\"type\":\"text\",\"text\":\"km/h\",\"y\":36,\"font\":\"14\"}]},"
+    "{\"type\":\"gmeter\",\"signal\":\"g_lon\",\"signal2\":\"g_lat\",\"widgets\":[{\"type\":\"value\",\"signal\":\"g_tot\",\"x\":0,\"y\":62,\"font\":\"28\"},"
+    "{\"type\":\"value\",\"signal\":\"g_lon\",\"x\":-50,\"y\":-62,\"font\":\"14\"},"
+    "{\"type\":\"value\",\"signal\":\"g_lat\",\"x\":50,\"y\":-62,\"font\":\"14\"},"
+    "{\"type\":\"value\",\"signal\":\"g_vert\",\"x\":0,\"y\":85,\"font\":\"14\"}]}]}";
+#else
 static const char RG_LAYOUT_DEFAULT_JSON[] =
     "{\"version\":2,\"signals\":[{\"name\":\"rpm\",\"title\":\"RPM\",\"unit\":\"x1000\",\"min\":0,\"max\":8000,\"decimals\":0,\"zones\":[{\"from\":6500,\"to\":8000,\"color\":\"#ff3030\"}]},"
     "{\"name\":\"coolant\",\"title\":\"COOLANT\",\"unit\":\"C\",\"min\":50,\"max\":130,\"decimals\":0,\"zones\":[{\"from\":50,\"to\":70,\"color\":\"#4080ff\"},"
@@ -46,3 +83,4 @@ static const char RG_LAYOUT_DEFAULT_JSON[] =
     "{\"type\":\"value\",\"signal\":\"g_lat\",\"x\":100,\"y\":-125,\"font\":\"orbitron_24.fnt\"},"
     "{\"type\":\"value\",\"signal\":\"g_vert\",\"x\":0,\"y\":170,\"font\":\"orbitron_24.fnt\"}],"
     "\"bg_image\":\"bg_hud.bin\"}]}";
+#endif

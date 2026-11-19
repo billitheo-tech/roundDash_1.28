@@ -19,6 +19,13 @@
 
 static const char *TAG = "UI";
 
+// Overlay text (AP card, toast, Wi-Fi badge): 28 px on the 480 px screen, 14 px on 240.
+#if RG_UI_RES >= 480
+#define UI_OVERLAY_FONT (&lv_font_montserrat_28)
+#else
+#define UI_OVERLAY_FONT (&lv_font_montserrat_14)
+#endif
+
 static lv_display_t *s_disp;
 
 static void lvgl_start(void)
@@ -33,6 +40,7 @@ static void lvgl_start(void)
     };
     ESP_ERROR_CHECK(lvgl_port_init(&port_cfg));
 
+#if RG_BOARD_RGB_PANEL
     /*
      * Без разрывов: LVGL рисует прямо в кадровые буферы панели (два, в PSRAM)
      * в direct mode, esp_lvgl_port меняет их по окончании кадра. Буферы
@@ -56,6 +64,27 @@ static void lvgl_start(void)
         },
     };
     s_disp = lvgl_port_add_disp_rgb(&disp_cfg, &rgb_cfg);
+#else
+    /*
+     * SPI panel (1.28): no frame buffers in the panel. LVGL renders partial areas into
+     * two small DMA-capable buffers in internal RAM; while one is sent over SPI, LVGL
+     * draws into the other. The GC9A01A takes RGB565 big-endian, hence swap_bytes.
+     */
+    const lvgl_port_display_cfg_t disp_cfg = {
+        .io_handle = roundGauge_board_lcd_io(),
+        .panel_handle = roundGauge_board_lcd_panel(),
+        .buffer_size = RG_LCD_H_RES * RG_LCD_DRAW_LINES,
+        .double_buffer = true,
+        .hres = RG_LCD_H_RES,
+        .vres = RG_LCD_V_RES,
+        .color_format = LV_COLOR_FORMAT_RGB565,
+        .flags = {
+            .buff_dma = true,
+            .swap_bytes = true,
+        },
+    };
+    s_disp = lvgl_port_add_disp(&disp_cfg);
+#endif
     configASSERT(s_disp != NULL);
 
     // Тач в LVGL не регистрируем: свайпы распознаёт отдельная задача (tasks/touch), а
@@ -129,7 +158,7 @@ static void fps_init(void)
     lv_obj_set_style_text_align(s_fps_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_bg_color(s_fps_label, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(s_fps_label, LV_OPA_70, 0);
-    lv_obj_align(s_fps_label, LV_ALIGN_TOP_MID, 0, 14);
+    lv_obj_align(s_fps_label, LV_ALIGN_TOP_MID, 0, RG_UI_PX(14));
     lv_label_set_text(s_fps_label, "");
 }
 
@@ -165,10 +194,10 @@ static lv_obj_t *s_ap_card, *s_ap_title, *s_ap_l1, *s_ap_l2, *s_ap_l3, *s_ap_bad
 static lv_obj_t *ap_label(lv_obj_t *parent, int y, lv_color_t color)
 {
     lv_obj_t *l = lv_label_create(parent);
-    lv_obj_set_width(l, 320);
+    lv_obj_set_width(l, RG_UI_PX(320));
     lv_label_set_long_mode(l, LV_LABEL_LONG_DOT);
     lv_obj_set_style_text_align(l, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_text_font(l, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_font(l, UI_OVERLAY_FONT, 0);
     lv_obj_set_style_text_color(l, color, 0);
     lv_obj_align(l, LV_ALIGN_TOP_MID, 0, y);
     lv_label_set_text(l, "");
@@ -193,19 +222,19 @@ static void ap_overlay_init(void)
 {
     lv_obj_t *top = lv_layer_top();
     s_toast = lv_label_create(top);
-    lv_obj_set_style_text_font(s_toast, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_font(s_toast, UI_OVERLAY_FONT, 0);
     lv_obj_set_style_text_color(s_toast, lv_color_white(), 0);
     lv_obj_set_style_bg_color(s_toast, lv_color_hex(0x0B1015), 0);
     lv_obj_set_style_bg_opa(s_toast, LV_OPA_90, 0);
     lv_obj_set_style_border_color(s_toast, lv_color_hex(0x00C0FF), 0);
     lv_obj_set_style_border_width(s_toast, 2, 0);
-    lv_obj_set_style_radius(s_toast, 12, 0);
-    lv_obj_set_style_pad_all(s_toast, 10, 0);
-    lv_obj_align(s_toast, LV_ALIGN_CENTER, 0, 150);
+    lv_obj_set_style_radius(s_toast, RG_UI_PX(12), 0);
+    lv_obj_set_style_pad_all(s_toast, RG_UI_PX(10), 0);
+    lv_obj_align(s_toast, LV_ALIGN_CENTER, 0, RG_UI_PX(150));
     lv_obj_set_hidden(s_toast, true);
 
     s_ap_card = lv_obj_create(top);
-    lv_obj_set_size(s_ap_card, 350, 214);
+    lv_obj_set_size(s_ap_card, RG_UI_PX(350), RG_UI_PX(214));
     lv_obj_center(s_ap_card);
     lv_obj_set_clickable(s_ap_card, false);
     lv_obj_set_scrollable(s_ap_card, false);
@@ -213,18 +242,18 @@ static void ap_overlay_init(void)
     lv_obj_set_style_bg_opa(s_ap_card, LV_OPA_90, 0);
     lv_obj_set_style_border_color(s_ap_card, lv_color_hex(0x00C0FF), 0);
     lv_obj_set_style_border_width(s_ap_card, 2, 0);
-    lv_obj_set_style_radius(s_ap_card, 18, 0);
-    lv_obj_set_style_pad_all(s_ap_card, 8, 0);
-    s_ap_title = ap_label(s_ap_card, 6, lv_color_hex(0x00C0FF));
-    s_ap_l1 = ap_label(s_ap_card, 52, lv_color_white());
-    s_ap_l2 = ap_label(s_ap_card, 94, lv_color_white());
-    s_ap_l3 = ap_label(s_ap_card, 136, lv_color_hex(0x9E9E9E));
+    lv_obj_set_style_radius(s_ap_card, RG_UI_PX(18), 0);
+    lv_obj_set_style_pad_all(s_ap_card, RG_UI_PX(8), 0);
+    s_ap_title = ap_label(s_ap_card, RG_UI_PX(6), lv_color_hex(0x00C0FF));
+    s_ap_l1 = ap_label(s_ap_card, RG_UI_PX(52), lv_color_white());
+    s_ap_l2 = ap_label(s_ap_card, RG_UI_PX(94), lv_color_white());
+    s_ap_l3 = ap_label(s_ap_card, RG_UI_PX(136), lv_color_hex(0x9E9E9E));
     lv_obj_set_hidden(s_ap_card, true);
 
     s_ap_badge = lv_label_create(top);
-    lv_obj_set_style_text_font(s_ap_badge, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_font(s_ap_badge, UI_OVERLAY_FONT, 0);
     lv_obj_set_style_text_color(s_ap_badge, lv_color_hex(0x00C0FF), 0);
-    lv_obj_align(s_ap_badge, LV_ALIGN_BOTTOM_MID, 0, -16);
+    lv_obj_align(s_ap_badge, LV_ALIGN_BOTTOM_MID, 0, -RG_UI_PX(16));
     lv_obj_set_hidden(s_ap_badge, true);
 }
 

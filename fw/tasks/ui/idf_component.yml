@@ -1,6 +1,8 @@
 ## IDF Component Manager Manifest File
 dependencies:
+  # 9.6 adds lv_obj_set_hidden/clickable/scrollable (used throughout); after 9.6 the
+  # src/ headers that ui_screens.c includes are removed. ^9 can resolve to 9.5.
   lvgl/lvgl:
-    version: "^9"
+    version: ">=9.6.0,<9.7"
   espressif/esp_lvgl_port:
     version: "^2.9.0"

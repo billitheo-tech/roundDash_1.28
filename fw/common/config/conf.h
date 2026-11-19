@@ -39,7 +39,7 @@
 #define RG_TOUCH_POLL_MS 20
 // Свайп: горизонтальное смещение от точки касания не меньше MIN_PX, заметно больше
 // вертикального, за не более MAX_MS. Срабатывает сразу, не дожидаясь подъёма пальца.
-#define RG_TOUCH_SWIPE_MIN_PX 60
+#define RG_TOUCH_SWIPE_MIN_PX RG_UI_PX(60)
 #define RG_TOUCH_SWIPE_MAX_MS 800
 
 // imu_task: акселерометр QMI8658, 125 Гц (tasks/imu). Сигналы g_* живут столько мс без новых
@@ -110,8 +110,16 @@
 #ifndef RG_HAS_TOUCH
 #define RG_HAS_TOUCH 1
 #endif
+// Screen size the UI is laid out for. Upstream sizes are for the 480 px 2.1; RG_UI_PX() scales
+// them to the board (240 px on the 1.28). RG_BOARD_1_28 comes from fw/CMakeLists.txt.
+#if RG_BOARD_1_28
+#define RG_UI_RES 240
+#else
+#define RG_UI_RES 480
+#endif
+#define RG_UI_PX(px) ((px) * RG_UI_RES / 480)
 // Размер шкалы/кольца на круглом экране, px.
-#define RG_UI_DIAL_SIZE 440
+#define RG_UI_DIAL_SIZE RG_UI_PX(440)
 // Счётчик кадров и время отрисовки сверху экрана. Задаётся при сборке: idf.py -D RG_UI_SHOW_FPS=0 build
 // (по умолчанию 1; релизная сборка tools/build/build.* передаёт 0).
 #ifndef RG_UI_SHOW_FPS

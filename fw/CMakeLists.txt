@@ -1,6 +1,23 @@
 cmake_minimum_required(VERSION 3.22)
 
+# Плата / board: "1_28" — Waveshare ESP32-S3-Touch-LCD-1.28 (GC9A01A SPI 240x240, 2 MB quad PSRAM),
+# "2_1" — Waveshare ESP32-S3-Touch-LCD-2.1 (upstream). "idf.py -D RG_BOARD=2_1 build" (clean build dir
+# when switching: sdkconfig is generated once from the defaults below).
+if(NOT DEFINED RG_BOARD)
+    set(RG_BOARD "1_28")
+endif()
+if(NOT RG_BOARD STREQUAL "1_28" AND NOT RG_BOARD STREQUAL "2_1")
+    message(FATAL_ERROR "RG_BOARD must be 1_28 or 2_1, got '${RG_BOARD}'")
+endif()
+set(SDKCONFIG_DEFAULTS "sdkconfig.defaults;sdkconfig.board.${RG_BOARD}")
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+
+if(RG_BOARD STREQUAL "1_28")
+    idf_build_set_property(COMPILE_DEFINITIONS "RG_BOARD_1_28=1" APPEND)
+else()
+    idf_build_set_property(COMPILE_DEFINITIONS "RG_BOARD_1_28=0" APPEND)
+endif()
 
 # Собирать только main и то, от чего он зависит.
 idf_build_set_property(MINIMAL_BUILD ON)

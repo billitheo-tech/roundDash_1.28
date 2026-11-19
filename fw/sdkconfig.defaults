@@ -7,23 +7,12 @@ CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
-# ESP32-S3R8: 8 МБ octal PSRAM — под два кадровых буфера RGB-экрана.
+# PSRAM, режим кэша и размер кэша картинок LVGL — в sdkconfig.board.<плата>.
 CONFIG_SPIRAM=y
-CONFIG_SPIRAM_MODE_OCT=y
 CONFIG_SPIRAM_SPEED_80M=y
 
-# Экран (docs/fw-design.md §3.1). CPU 240 МГц под рендер LVGL, остальное — по
-# рекомендациям Espressif для RGB-панелей на ESP32-S3:
-#  - код и константы исполняются из PSRAM, поэтому запись во флеш (NVS, OTA)
-#    не останавливает вывод кадра;
-#  - строка кэша данных 64 байта — шире канал к PSRAM;
-#  - прерывания RGB в IRAM и перезапуск DMA на каждом VSYNC — картинка не
-#    съезжает навсегда после одного сбоя.
+# CPU 240 МГц под рендер LVGL. Параметры экрана платы — в sdkconfig.board.<плата>.
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
-CONFIG_SPIRAM_XIP_FROM_PSRAM=y
-CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y
-CONFIG_LCD_RGB_ISR_IRAM_SAFE=y
-CONFIG_LCD_RGB_RESTART_IN_VSYNC=y
 CONFIG_COMPILER_OPTIMIZATION_PERF=y
 
 # Шрифты тестового экрана (14 включён по умолчанию).
@@ -57,7 +46,6 @@ CONFIG_LV_FS_POSIX_PATH="/media"
 # декодер читает .bin из SPIFFS кусками при каждой перерисовке области - фон со
 # стрелкой давал 5 fps. Кэш: фон до 922 КБ (ARGB8888) + стрелка + запас на экраны.
 CONFIG_LV_BIN_DECODER_RAM_LOAD=y
-CONFIG_LV_CACHE_DEF_SIZE=3145728
 # Память LVGL - из общей кучи (большие блоки уходят в PSRAM), а не из пула 64 КБ:
 # иначе кэш картинок и много экранов не поместятся.
 CONFIG_LV_USE_CLIB_MALLOC=y

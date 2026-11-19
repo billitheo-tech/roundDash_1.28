@@ -175,7 +175,7 @@ static bool parse_widget(const cJSON *j, roundGauge_widget_t *w)
     w->op = '>';
     w->angle = 270;
     w->rotation = 135;
-    w->width = 12;
+    w->width = RG_UI_PX(12);
     switch (w->type) {
     case RG_WIDGET_VALUE:
         strlcpy(w->font, "48", sizeof(w->font));
@@ -274,16 +274,16 @@ static bool parse_screen(const cJSON *j, roundGauge_screen_t *s)
     s->major_every = 5;
     s->label_div = 1;
     s->needle_color = 0xFF8000;
-    s->needle_width = 6;
-    s->tick_major_len = 22;
-    s->tick_minor_len = 10;
-    s->tick_major_width = 4;
+    s->needle_width = RG_UI_PX(6);
+    s->tick_major_len = RG_UI_PX(22);
+    s->tick_minor_len = RG_UI_PX(10);
+    s->tick_major_width = RG_UI_PX(4);
     s->tick_minor_width = 2;
-    s->label_gap = 15;
-    strlcpy(s->label_font, "28", sizeof(s->label_font));
+    s->label_gap = RG_UI_PX(15);
+    strlcpy(s->label_font, RG_UI_RES >= 480 ? "28" : "14", sizeof(s->label_font));
     s->needle_px = -1;
     s->needle_py = -1;
-    s->ring_width = 36;
+    s->ring_width = RG_UI_PX(36);
     s->g_range = 1.5f;
     s->g_step = 0.5f;
     s->trail = 8;

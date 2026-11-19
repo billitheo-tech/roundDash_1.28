@@ -1,4 +1,6 @@
 #include "board.h"
+#if !RG_BOARD_1_28
+// Waveshare ESP32-S3-Touch-LCD-2.1 (upstream board).
 #include "driver/i2c_master.h"
 #include "driver/ledc.h"
 #include "driver/sdspi_host.h"
@@ -260,6 +262,11 @@ esp_lcd_panel_handle_t roundGauge_board_lcd_panel(void)
     return s_lcd_panel;
 }
 
+esp_lcd_panel_io_handle_t roundGauge_board_lcd_io(void)
+{
+    return NULL; // RGB panel: esp_lvgl_port drives it without a panel IO
+}
+
 esp_lcd_touch_handle_t roundGauge_board_touch(void)
 {
     return s_touch;
@@ -373,3 +380,5 @@ esp_err_t roundGauge_board_sd_space(uint64_t *total_kb, uint64_t *free_kb)
     *free_kb = free_b / 1024;
     return ESP_OK;
 }
+
+#endif // !RG_BOARD_1_28

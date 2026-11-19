@@ -11,3 +11,6 @@ dependencies:
   # 3-wire SPI для init-последовательности ST7701: SCL/SDA на GPIO, CS на TCA9554.
   espressif/esp_lcd_panel_io_additions:
     version: "^1.0.1"
+  # ESP32-S3-Touch-LCD-1.28: GC9A01A over 4-wire SPI.
+  espressif/esp_lcd_gc9a01:
+    version: "^2.0.0"

@@ -1,0 +1,11 @@
+# Waveshare ESP32-S3-Touch-LCD-1.28 (ESP32-S3R2). Applied after sdkconfig.defaults.
+
+# ESP32-S3R2: 2 MB quad PSRAM. No XIP from PSRAM: copying the app (~1.5 MB+) into PSRAM
+# would eat most of it. The SPI display has no continuous scan-out, so flash writes
+# (NVS, OTA) stalling the cache do not disturb the picture the way they do on RGB panels.
+CONFIG_SPIRAM_MODE_QUAD=y
+# CONFIG_SPIRAM_XIP_FROM_PSRAM is not set
+CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y
+
+# LVGL image cache: a 240x240 ARGB8888 background is 225 KB.
+CONFIG_LV_CACHE_DEF_SIZE=1048576

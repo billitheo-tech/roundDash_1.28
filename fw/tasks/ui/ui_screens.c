@@ -17,7 +17,7 @@ static const char *TAG = "UI";
 // Внутреннее разрешение шкалы, дуги и полосы: значения сигнала приводятся к 0..RES,
 // чтобы стрелка двигалась плавно при любых min/max (виджеты LVGL целочисленные).
 #define RES 1000
-#define NEEDLE_MARGIN 55
+#define NEEDLE_MARGIN RG_UI_PX(55)
 #define BLINK_HALF_PERIOD_MS 250 // мигание 2 Гц
 #define MAX_FONTS (RG_UI_MAX_SCREENS * (RG_LAYOUT_MAX_WIDGETS + 1)) // виджеты и подписи шкалы
 
@@ -323,9 +323,9 @@ static void build_ring(ui_screen_t *u)
 // ------------------------------------------------------------------
 // G-сенсор: перегрузки точкой на круговой сетке
 // ------------------------------------------------------------------
-#define GM_RADIUS 180          // радиус внешнего кольца, px
-#define GM_DOT_D 28
-#define GM_PEAK_D 10
+#define GM_RADIUS RG_UI_PX(180) // радиус внешнего кольца, px
+#define GM_DOT_D RG_UI_PX(28)
+#define GM_PEAK_D RG_UI_PX(10)
 #define GM_TRAIL_STEP_MS 50    // шаг записи шлейфа
 #define GM_PEAK_HOLD_MS 8000   // сколько максимум держится, потом спадает
 #define GM_PEAK_DECAY_G_S 0.25f
@@ -377,8 +377,8 @@ static void build_gmeter(ui_screen_t *u)
 
     // Метки максимумов: маркер на оси и число за внешним кольцом.
     if (c->peaks) {
-        const int lx[4] = { 0, 0, -(GM_RADIUS + 36), GM_RADIUS + 36 };
-        const int ly[4] = { -(GM_RADIUS + 24), GM_RADIUS + 24, 0, 0 };
+        const int lx[4] = { 0, 0, -(GM_RADIUS + RG_UI_PX(36)), GM_RADIUS + RG_UI_PX(36) };
+        const int ly[4] = { -(GM_RADIUS + RG_UI_PX(24)), GM_RADIUS + RG_UI_PX(24), 0, 0 };
         for (int i = 0; i < 4; i++) {
             u->gm_peak[i] = gm_circle(u->scr, GM_PEAK_D, lv_color_hex(0xFF4040), LV_OPA_COVER, lv_color_hex(0xFF4040), 0);
             lv_obj_set_hidden(u->gm_peak[i], true);
@@ -393,7 +393,7 @@ static void build_gmeter(ui_screen_t *u)
 
     // Шлейф: от самой старой (маленькой и прозрачной) к новой; новые рисуются выше.
     for (int k = c->trail - 1; k >= 0; k--) {
-        int d = 8 + (GM_DOT_D - 12) * (c->trail - k) / (c->trail + 1);
+        int d = RG_UI_PX(8) + (GM_DOT_D - RG_UI_PX(12)) * (c->trail - k) / (c->trail + 1);
         lv_opa_t opa = (lv_opa_t)(180 - 150 * k / (c->trail > 1 ? c->trail - 1 : 1));
         u->gm_trail[k] = gm_circle(u->scr, d, lv_color_hex(c->color), opa, lv_color_hex(c->color), 0);
         lv_obj_set_hidden(u->gm_trail[k], true);
