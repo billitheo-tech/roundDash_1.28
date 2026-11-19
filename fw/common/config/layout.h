@@ -20,7 +20,7 @@
 //       "bg_color": "#000000", "bg_image": "",
 //       "color": "#ffffff", "text_color": "#ffffff",
 //       "angle": 270, "rotation": 135, "ticks": 41, "major_every": 5, "label_div": 1000,
-//       "needle_color": "#ff8000", "needle_width": 6, "needle_dot": false,
+//       "needle_color": "#ff8000", "needle_width": 6,
 //       "tick_major_len": 22, "tick_minor_len": 10, "tick_major_width": 4, "tick_minor_width": 2,
 //       "label_gap": 15, "label_font": "28", "needle_image": "", "needle_px": -1, "needle_py": -1,
 //       "markers": [ { "value": 7000, "color": "#ff0000" } ],
@@ -121,10 +121,6 @@ typedef struct {
     float label_div;
     uint32_t needle_color;
     uint8_t needle_width;
-    // Dot on the tick ring instead of a needle: LVGL redraws only a small square per step
-    // (the line needle repaints its whole bounding box, scale and labels underneath).
-    // needle_width is then the dot diameter.
-    bool needle_dot;
     // Риски и подписи шкалы. Подпись стоит на радиусе: край - tick_major_len - label_gap.
     uint8_t tick_major_len, tick_minor_len;     // длина, px
     uint8_t tick_major_width, tick_minor_width; // толщина, px

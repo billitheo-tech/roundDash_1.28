@@ -360,7 +360,6 @@ static bool parse_screen(const cJSON *j, roundGauge_screen_t *s)
     get_color(j, "color", &s->color);
     get_color(j, "text_color", &s->text_color);
     get_color(j, "needle_color", &s->needle_color);
-    get_bool(j, "needle_dot", &s->needle_dot);
     get_file_name(j, "bg_image", s->bg_image, sizeof(s->bg_image));
     get_file_name(j, "needle_image", s->needle_image, sizeof(s->needle_image));
     get_file_name(j, "label_font", s->label_font, sizeof(s->label_font));

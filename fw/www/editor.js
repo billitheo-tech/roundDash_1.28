@@ -14,7 +14,7 @@ const RG_SCREEN_DEFAULTS = {
     type: 'dial', signal: '', has_range: false, min: 0, max: 100,
     bg_color: '#000000', bg_image: '', color: '#ffffff', text_color: '#ffffff',
     angle: 270, rotation: 135, ticks: 41, major_every: 5, label_div: 1,
-    needle_color: '#ff8000', needle_width: 6, needle_dot: false, needle_image: '', needle_px: -1, needle_py: -1, ring_width: 36,
+    needle_color: '#ff8000', needle_width: 6, needle_image: '', needle_px: -1, needle_py: -1, ring_width: 36,
     tick_major_len: 22, tick_minor_len: 10, tick_major_width: 4, tick_minor_width: 2, label_gap: 15, label_font: '28',
     signal2: 'g_lat', g_range: 1.5, g_step: 0.5, trail: 8, peaks: true, felt: true,
 };
@@ -50,7 +50,7 @@ const RG_WIDGET_FIELDS = {
 };
 const RG_SCREEN_FIELDS = {
     dial: ['bg_color', 'bg_image', 'color', 'text_color', 'angle', 'rotation', 'ticks', 'major_every', 'label_div',
-           'needle_color', 'needle_width', 'needle_dot', 'needle_image', 'needle_px', 'needle_py',
+           'needle_color', 'needle_width', 'needle_image', 'needle_px', 'needle_py',
            'tick_major_len', 'tick_minor_len', 'tick_major_width', 'tick_minor_width', 'label_gap', 'label_font'],
     ring: ['bg_color', 'bg_image', 'color', 'text_color', 'angle', 'rotation', 'ring_width'],
     number: ['bg_color', 'bg_image', 'color', 'text_color'],

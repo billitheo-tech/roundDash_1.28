@@ -5,8 +5,7 @@
 // и встроенным шрифтом, так что приборка работает и при пустом разделе media.
 #if RG_BOARD_1_28
 // ESP32-S3-Touch-LCD-1.28 (240 px): the same screens with offsets halved, the built-in fonts
-// (14/28/48) and no images: the media images and fonts are drawn for 480 px. Dials use a dot
-// on the tick ring instead of a line needle (much less to redraw per step).
+// (14/28/48) and no images: the media images and fonts are drawn for 480 px.
 static const char RG_LAYOUT_DEFAULT_JSON[] =
     "{\"version\":2,\"signals\":[{\"name\":\"rpm\",\"title\":\"RPM\",\"unit\":\"x1000\",\"min\":0,\"max\":8000,\"decimals\":0,\"zones\":[{\"from\":6500,\"to\":8000,\"color\":\"#ff3030\"}]},"
     "{\"name\":\"coolant\",\"title\":\"COOLANT\",\"unit\":\"C\",\"min\":50,\"max\":130,\"decimals\":0,\"zones\":[{\"from\":50,\"to\":70,\"color\":\"#4080ff\"},{\"from\":70,\"to\":105,\"color\":\"#00c060\"},{\"from\":105,\"to\":130,\"color\":\"#ff3030\"}]},"
@@ -23,13 +22,13 @@ static const char RG_LAYOUT_DEFAULT_JSON[] =
     "{\"name\":\"fuel_level\",\"title\":\"FUEL\",\"unit\":\"%\",\"min\":0,\"max\":100,\"decimals\":0},"
     "{\"name\":\"lambda\",\"title\":\"LAMBDA\",\"min\":0.6,\"max\":1.4,\"decimals\":2},"
     "{\"name\":\"tps\",\"title\":\"TPS\",\"unit\":\"%\",\"min\":0,\"max\":100,\"decimals\":0},"
-    "{\"name\":\"afr\",\"title\":\"AFR\",\"min\":10,\"max\":20,\"decimals\":1,\"zones\":[{\"from\":10,\"to\":11.5,\"color\":\"#ffb000\"},{\"from\":11.5,\"to\":15,\"color\":\"#00c060\"},{\"from\":15,\"to\":20,\"color\":\"#ff3030\"}]}],\"screens\":[{\"type\":\"dial\",\"signal\":\"rpm\",\"label_div\":1000,\"ticks\":41,\"major_every\":5,\"needle_color\":\"#ff8000\",\"needle_dot\":true,\"needle_width\":12,\"widgets\":[{\"type\":\"text\",\"text\":\"RPM\",\"y\":-45,\"font\":\"14\"},"
+    "{\"name\":\"afr\",\"title\":\"AFR\",\"min\":10,\"max\":20,\"decimals\":1,\"zones\":[{\"from\":10,\"to\":11.5,\"color\":\"#ffb000\"},{\"from\":11.5,\"to\":15,\"color\":\"#00c060\"},{\"from\":15,\"to\":20,\"color\":\"#ff3030\"}]}],\"screens\":[{\"type\":\"dial\",\"signal\":\"rpm\",\"label_div\":1000,\"ticks\":41,\"major_every\":5,\"needle_color\":\"#ff8000\",\"widgets\":[{\"type\":\"text\",\"text\":\"RPM\",\"y\":-45,\"font\":\"14\"},"
     "{\"type\":\"value\",\"y\":30,\"font\":\"28\",\"decimals\":2,\"div\":1000},"
     "{\"type\":\"text\",\"text\":\"x1000\",\"y\":55,\"font\":\"14\"}],\"label_font\":\"14\"},"
     "{\"type\":\"ring\",\"signal\":\"coolant\",\"color\":\"#00c0ff\",\"widgets\":[{\"type\":\"text\",\"text\":\"COOLANT\",\"y\":-35,\"font\":\"14\"},"
     "{\"type\":\"value\",\"zone_color\":true,\"font\":\"48\"},"
     "{\"type\":\"text\",\"text\":\"C\",\"y\":30,\"font\":\"14\"}]},"
-    "{\"type\":\"dial\",\"signal\":\"afr\",\"ticks\":41,\"major_every\":8,\"needle_dot\":true,\"needle_width\":12,\"widgets\":[{\"type\":\"text\",\"text\":\"AFR\",\"y\":-45,\"font\":\"14\"},"
+    "{\"type\":\"dial\",\"signal\":\"afr\",\"ticks\":41,\"major_every\":8,\"widgets\":[{\"type\":\"text\",\"text\":\"AFR\",\"y\":-45,\"font\":\"14\"},"
     "{\"type\":\"value\",\"y\":30,\"font\":\"28\",\"zone_color\":true}],\"label_font\":\"14\"},"
     "{\"type\":\"number\",\"signal\":\"speed\",\"widgets\":[{\"type\":\"text\",\"text\":\"SPEED\",\"y\":-42,\"font\":\"14\"},"
     "{\"type\":\"value\",\"font\":\"48\"},"
