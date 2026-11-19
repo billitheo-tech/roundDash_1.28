@@ -92,8 +92,10 @@ extern "C" {
 
 #define RG_LCD_H_RES 240
 #define RG_LCD_V_RES 240
-#define RG_LCD_MIRROR_X 0    /* orientation: confirm on hardware */
+#define RG_LCD_MIRROR_X 1    /* checked on hardware: X=0 shows the image mirrored left-right */
 #define RG_LCD_MIRROR_Y 0
+#define RG_TOUCH_MIRROR_X 0  /* touch glass frame is independent of the LCD scan direction */
+#define RG_TOUCH_MIRROR_Y 0
 #define RG_LCD_DRAW_LINES 40 /* LVGL partial draw buffer height (x2, internal DMA RAM) */
 
 #define RG_PIN_TOUCH_INT GPIO_NUM_5

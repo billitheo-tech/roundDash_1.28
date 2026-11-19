@@ -122,8 +122,8 @@ static esp_err_t touch_init(void)
             .interrupt = 0, // CST816S pulses INT low on a touch
         },
         .flags = {
-            .mirror_x = RG_LCD_MIRROR_X,
-            .mirror_y = RG_LCD_MIRROR_Y,
+            .mirror_x = RG_TOUCH_MIRROR_X,
+            .mirror_y = RG_TOUCH_MIRROR_Y,
         },
     };
     return esp_lcd_touch_new_i2c_cst816s(io, &tp_config, &s_touch);
