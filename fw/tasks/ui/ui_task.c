@@ -78,6 +78,13 @@ static void lvgl_start(void)
         .hres = RG_LCD_H_RES,
         .vres = RG_LCD_V_RES,
         .color_format = LV_COLOR_FORMAT_RGB565,
+        // esp_lvgl_port applies these to the panel when the display is added (and on
+        // rotation), overriding any mirror set in board init, so orientation lives here.
+        .rotation = {
+            .swap_xy = false,
+            .mirror_x = RG_LCD_MIRROR_X,
+            .mirror_y = RG_LCD_MIRROR_Y,
+        },
         .flags = {
             .buff_dma = true,
             .swap_bytes = true,
