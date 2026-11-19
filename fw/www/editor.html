@@ -387,6 +387,14 @@
                                                                 :value="screen.needle_width"
                                                                 @input="numberInput(screen, 'needle_width', $event)">
                                                         </div>
+                                                        <div class="col-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="needledot"
+                                                                    x-model="screen.needle_dot">
+                                                                <label class="form-check-label" for="needledot"
+                                                                    x-text="t('ed_needle_dot')"></label>
+                                                            </div>
+                                                        </div>
                                                         <div class="col-12 col-md-6">
                                                             <label class="form-label small"
                                                                 x-text="t('ed_needle_image')"></label>

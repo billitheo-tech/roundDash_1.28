@@ -45,6 +45,7 @@ typedef struct {
     sig_t sig;                      // сигнал основного виджета (с переопределениями экрана)
     lv_obj_t *scale, *needle, *arc;
     bool needle_is_image;
+    bool needle_is_dot;
     lv_point_precise_t needle_pts[2];  // линия-стрелка держит указатель на эти точки
     int cur_zone;
     // Что показано сейчас - чтобы не трогать виджет без изменений.
@@ -281,6 +282,16 @@ static void build_dial(ui_set_t *set, ui_screen_t *u)
         lv_obj_set_pos(img, size / 2 - px, size / 2 - py);
         u->needle = img;
         u->needle_is_image = true;
+    } else if (c->needle_dot) {
+        lv_obj_t *dot = lv_obj_create(scale);
+        lv_obj_remove_style_all(dot);
+        not_clickable(dot);
+        lv_obj_set_size(dot, c->needle_width, c->needle_width);
+        lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, 0);
+        lv_obj_set_style_bg_color(dot, lv_color_hex(c->needle_color), 0);
+        lv_obj_set_style_bg_opa(dot, LV_OPA_COVER, 0);
+        u->needle = dot;
+        u->needle_is_dot = true;
     } else {
         if (c->needle_image[0]) {
             ESP_LOGW(TAG, "needle image \"%s\" not found, drawing a line", c->needle_image);
@@ -813,6 +824,17 @@ static void needle_line_set(ui_screen_t *u, int32_t pos)
     lv_obj_set_pos(u->needle, (int32_t)x0, (int32_t)y0);
 }
 
+// Dot needle: centred on the middle of the major ticks.
+static void needle_dot_set(ui_screen_t *u, int32_t pos)
+{
+    const roundGauge_screen_t *c = u->cfg;
+    const float centre = RG_UI_DIAL_SIZE / 2.0f;
+    const float r = centre - c->tick_major_len / 2.0f;
+    float ang = (float)(c->rotation + c->angle * pos / (float)RES) * (float)M_PI / 180.0f;
+    lv_obj_set_pos(u->needle, (int32_t)lroundf(centre + r * cosf(ang) - c->needle_width / 2.0f),
+                   (int32_t)lroundf(centre + r * sinf(ang) - c->needle_width / 2.0f));
+}
+
 static const float P10[] = {1, 10, 100, 1000};
 
 static void update_widget(ui_widget_t *w, bool force)
@@ -911,6 +933,8 @@ static void update_screen(ui_screen_t *u)
             int32_t p = pos_key < 0 ? 0 : pos_key;
             if (u->needle_is_image) {
                 lv_scale_set_image_needle_value(u->scale, u->needle, p);
+            } else if (u->needle_is_dot) {
+                needle_dot_set(u, p);
             } else {
                 needle_line_set(u, p);
             }
