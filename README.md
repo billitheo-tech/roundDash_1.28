@@ -197,8 +197,7 @@ testing on a rusEFI uaEFI Pro is in progress. Issues and pull requests are welco
 ## Credits and third-party code
 
 Original firmware: **[Light-r4y/roundDash_2.1](https://github.com/Light-r4y/roundDash_2.1)**,
-© 2026 Light-r4y, MIT. The upstream README (Russian) is kept as [README_ru.md](README_ru.md); it
-describes the 2.1 board.
+© 2026 Light-r4y, MIT. Its README (English and Russian) covers the 2.1 board.
 
 | What | Where | License |
 |---|---|---|
