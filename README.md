@@ -1,218 +1,218 @@
-# roundGauge — CAN dashboard on ESP32-S3
-
-**English** | [Русский](README_ru.md)
+# roundDash 1.28 — round CAN gauge for rusEFI
 
 [![Platform](https://img.shields.io/badge/platform-ESP32--S3-blue)](https://www.espressif.com/en/products/socs/esp32-s3)
 [![Framework](https://img.shields.io/badge/framework-ESP--IDF%20v6.0-red)](https://github.com/espressif/esp-idf)
 [![GUI](https://img.shields.io/badge/GUI-LVGL%209-orange)](https://lvgl.io)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Firmware for a car dashboard on the round touch screen
-[Waveshare ESP32-S3-Touch-LCD-2.1](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-2.1)
-(480×480): data comes from the CAN bus, what to show and how is configured
-from a web page over Wi-Fi, and it is operated with two buttons on the board's
-connector and swipes on the screen.
+A small round digital gauge that reads the **rusEFI CAN broadcast** and shows RPM, coolant, AFR, speed
+and more on a 1.28" touch screen. Which screens are shown, and how they look, is set from a web page on
+your phone over the gauge's own Wi-Fi. It works with the rusEFI preset out of the box: wire it to the
+CAN bus, turn on the broadcast in TunerStudio, and it runs.
 
-> **Working prototype.**
+This is a port of [Light-r4y/roundDash_2.1](https://github.com/Light-r4y/roundDash_2.1)
+(MIT, written for the larger 2.1" Waveshare board) to the cheaper, smaller 1.28" board.
 
-## ✨ Features
+## The gauge
 
-| | What |
+**Waveshare ESP32-S3-Touch-LCD-1.28** — Waveshare SKU **25098**
+([wiki](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-1.28)).
+
+| | |
 |---|---|
-| 🖥️ | ST7701S 480×480 screen, LVGL 9, two frame buffers, no tearing |
-| 🎨 | Up to 8 screens of four types — dial, ring fill, plain number, g-meter — and up to 4 extra widgets on each (number, text, image, conditional indicator, bar, mini arc); backgrounds and needles from images, configurable scale ticks, needle pivot |
-| 🔤 | Base set in `fw/media`: 18 fonts (Orbitron, Michroma, Russo One and Jura with Cyrillic, Black Ops One Slant, Segment7), 4 backgrounds (carbon, HUD grid, brushed metal, perforation), 3 needles; the built-in layout has 5 screens, including AFR |
-| 📐 | G-meter: QMI8658 accelerometer, g-forces as a dot on a round grid with a trail and maxima (as in racing cars); gravity calibration at any board tilt, signals `g_lon`/`g_lat`/`g_vert`/`g_tot` are available to any widget |
-| 👆 | Swipe left/right to switch screens; a build option for a screen without touch (`RG_HAS_TOUCH=0`) |
-| 🔔 | The board buzzer: modes "off / alerts / alerts + clicks", alert rules in the web interface (signal, condition, threshold, pattern: a series of beeps or continuous), silenced by any button |
-| 💾 | Logging to microSD in the MegaLogViewer format: all layout signals, 20 times per second; start manually, at power-on or by a condition (for example, RPM above a threshold); a "Logs" page to list, download and delete files |
-| 🔘 | Button 1: short press — next screen, hold — access point; button 2 — brightness cycle (100 / 60 / 30 / 10 %) |
-| 🚌 | CAN (TWAI) reception, a ready-made rusEFI mapping preset out of the box, DBC-style signal-to-frame mapping, data timeouts, web sniffer, "demo" mode with a generator |
-| 📶 | Wi-Fi access point on a long press of button 1; the screen shows a card with the network name, password and address, then an icon with the client count; the name and password are set in the web interface |
-| 🌐 | Web interface: home (status, brightness), screen editor with preview and drag & drop, media, CAN, sensor, "Access" (settings password, Wi-Fi name and password), update; RU/EN, light/dark theme |
-| 🔄 | Firmware and web interface updates via `/ota`, rollback of a failed update |
+| MCU | ESP32-S3R2, 16 MB flash, 2 MB PSRAM, Wi-Fi |
+| Display | 1.28" round IPS, 240×240, GC9A01A (SPI) |
+| Touch | CST816S capacitive |
+| IMU | QMI8658 (used for the g-meter screen) |
+| Size | Φ38.5 mm glass |
 
-## 🖼️ What it looks like
+Be sure to get the **ESP32-S3** version with touch. Waveshare also sells an RP2040 board with the same
+screen, and versions without touch; this firmware does not run on those.
 
-<p align="center">
-<img src="docs/img/screen_1_rpm.webp" width="190" alt="RPM"> <img src="docs/img/screen_2_coolant.webp" width="190" alt="COOLANT"> <img src="docs/img/screen_3_afr.webp" width="190" alt="AFR"> <img src="docs/img/screen_4_speed.webp" width="190" alt="SPEED"> <img src="docs/img/screen_5_gmeter.webp" width="190" alt="G-meter">
-</p>
+You also need:
+- a **3.3 V CAN transceiver**, such as an SN65HVD230 module or a TJA1051T/3 (the board has none);
+- a **12 V → 5 V automotive DC-DC** with surge protection, to power the gauge in the car.
 
-The five screens of the built-in layout: RPM (carbon), COOLANT (brushed metal), AFR (HUD grid),
-SPEED (perforation), g-meter (HUD grid). These are not photos of the board but a render of the
-layout by the same code that draws the editor preview, with the real backgrounds, needles and fonts
-of the base set (values: 3680 rpm, 88 °C, AFR 13.4, 124 km/h).
+## What it does
 
-## 🔧 Hardware
+- Reads the rusEFI CAN broadcast (frames 0x200–0x207, 500 kbps). By default the controller is
+  **listen-only**: it never transmits on your bus.
+- Five built-in screens: **RPM** (dial), **COOLANT** (ring), **AFR** (dial), **SPEED** (number) and a
+  **g-meter** (IMU).
+- Up to 8 screens of four types (dial, ring fill, number, g-meter), each with up to 4 extra widgets
+  (number, text, image, conditional indicator, bar, mini arc), colour zones and configurable ticks.
+- **Swipe** left/right on the screen to change pages.
+- **Web interface** over the gauge's own Wi-Fi access point: screen editor with live preview and drag &
+  drop, CAN signal mapping (DBC-style), CAN sniffer, demo mode, brightness, accelerometer calibration,
+  password, and firmware updates over the air (OTA, with rollback).
+- About 40–50 frames per second on the dial screens.
 
-- **Board** Waveshare ESP32-S3-Touch-LCD-2.1: ESP32-S3R8, 16 MB flash, 8 MB PSRAM.
-  Schematic and datasheets are in [hw/](hw/README.md).
-- **CAN transceiver**, 3.3 V (SN65HVD230 or TJA1051T/3) — the board has none.
-- **Power** in the car — a 12→5 V DC-DC converter with surge protection.
+### Signals in the rusEFI preset
 
-Everything connects to the J9 "12PIN Multi-function Interface" connector:
+| Signal | Frame | Signal | Frame |
+|---|---|---|---|
+| RPM | 0x201 | Oil pressure | 0x204 |
+| Vehicle speed | 0x201 | Oil temp | 0x204 |
+| TPS | 0x202 | Battery voltage | 0x204 |
+| MAP | 0x203 | Lambda / AFR | 0x207 |
+| Coolant temp | 0x203 | Fuel level | 0x203 |
+| Intake air temp | 0x203 | | |
 
-| J9 pin | Signal | Purpose |
+Anything else on the bus can be mapped on the web page's **CAN** tab.
+
+## Setting up rusEFI
+
+In TunerStudio, under the CAN settings:
+1. Turn on **rusEFI CAN broadcast** (the dash / "Enable rusEFI CAN broadcast" option).
+2. Leave the base ID at **0x200 (512)**, which is the default.
+3. Set the CAN bus to **500 kbps**.
+
+Burn the settings and restart the ECU. A wideband controller on the same bus does not interfere.
+
+## Wiring
+
+Everything goes through the board's **P2 connector** (JST SH 1.0 mm, 12-pin; a lead comes with the
+board). **Check the wire colours against the pins with a meter before you solder**: they are not the same
+on every lead.
+
+| P2 pin | Signal | Connect to |
 |---|---|---|
-| 2 | 5V | power from the DC-DC |
-| 1, 5, 11 | GND | |
-| 6 | 3V3 | transceiver supply |
-| 3 | GPIO19 | CAN RX |
-| 4 | GPIO20 | CAN TX |
-| 12 | GPIO0 | button 1 (in parallel with BOOT) |
-| 10 | GPIO44 | button 2 |
+| 1 | GND | ground (DC-DC and transceiver) |
+| 2 | VSYS | **5 V** from the DC-DC |
+| 4 | BOOT (GPIO0) | optional: a button to GND, same as the on-board BOOT key |
+| 6 | 3V3 | transceiver 3.3 V supply |
+| 9 | GPIO17 | transceiver **TX** input (TXD, "CTX" on SN65HVD230 modules) |
+| 10 | GPIO18 | transceiver **RX** output (RXD, "CRX") |
 
-> ⚠️ In the car, power the board through J9 pin 2, not through the Type-C
-> port: while Type-C is powered, a switch on the board hands GPIO44 to the
-> USB-UART chip and button 2 stops working. On the desk, with Type-C power,
-> button 1 remains. Details: [docs/fw-design.md §3](docs/fw-design.md).
+CAN-H and CAN-L go to the transceiver, not to the gauge. Use twisted pair.
 
-## 📁 Layout
+> ⚠️ **Never put 12 V on any P2 pin.** VSYS takes 5 V only. 12 V on the wrong wire kills the board's
+> 3.3 V regulator, and the board with it.
 
-```
-├── fw/                 firmware (ESP-IDF project)
-│   ├── main/           initialization and task startup
-│   ├── tasks/          one component per task: can, ui, buttons, touch, imu, sound, logger, webcfg
-│   ├── common/         board (pins, screen, touch), config (settings, password,
-│   │                   screen layout, CAN table), signals (signal values)
-│   ├── www/            web interface → www partition
-│   └── media/          base set of images → media partition
-├── docs/fw-design.md   firmware design, decisions, open questions
-├── hw/                 board schematic, datasheets, mechanical drawings
-└── tools/
-    ├── build/          release build and the portable flashing kit
-    └── webtest/        mock server for the web interface
-```
+**Termination:** the bus needs 120 Ω at each end. Measure between CAN-H and CAN-L with everything
+powered off: about **60 Ω** means the bus is already terminated at both ends, so the gauge must not add
+one. About **120 Ω** means one end is missing, and if the gauge is at that end, add 120 Ω at the gauge.
 
-## 📋 Requirements
+## Controls
 
-- [ESP-IDF v6.0](https://docs.espressif.com/projects/esp-idf/en/v6.0/esp32s3/get-started/)
-- Waveshare ESP32-S3-Touch-LCD-2.1 board, USB Type-C cable
+| Action | Result |
+|---|---|
+| Swipe left / right | next / previous screen |
+| BOOT key, short press | next screen |
+| BOOT key, hold 2 s | start the Wi-Fi access point |
+| BOOT key, hold 10 s | clear a forgotten settings password |
 
-Dependencies (LVGL, screen and touch drivers) are downloaded by the component
-manager on the first build.
+Holding BOOT while the board powers up puts it into the USB flashing mode. That is harmless: power it
+up again.
 
-## 🚀 Quick start
+### First run
 
-The ESP-IDF project is in `fw/`, not in the repository root. In VS Code with the
-Espressif extension open `roundGauge.code-workspace` (or the `fw` folder),
-otherwise the Build button looks for `CMakeLists.txt` in the root.
+1. **Hold BOOT for 2 seconds.** The screen shows the network name (`roundGauge-XXXX`), the password
+   (`roundgauge`) and the address.
+2. Connect from a phone or laptop and open `http://192.168.4.1/`.
+3. No car handy? **CAN** → turn on **Demo** → Apply, and the values start moving.
+4. **Screens** sets up the pages; "Apply to gauge" sends them straight to the board.
+
+Chrome on Android sometimes refuses to load the page from the gauge's access point
+(`ERR_TOO_MANY_RETRIES`). Samsung Internet or a laptop browser work.
+
+## Building and flashing
+
+Requires [ESP-IDF v6.0](https://docs.espressif.com/projects/esp-idf/en/v6.0/esp32s3/get-started/).
+Dependencies (LVGL, display and touch drivers) download on the first build.
 
 ```bash
 cd fw
 idf.py build
-idf.py -p COM5 flash monitor
+idf.py -p COM5 flash monitor     # or /dev/ttyACM0 etc.
 ```
 
-Use the port of the CH343 USB-UART on the board's Type-C; download mode is
-entered automatically. The target (`esp32s3`), 16 MB flash, PSRAM and the
-partition table are already set in `fw/sdkconfig.defaults`. Delete
-`fw/sdkconfig` after editing `sdkconfig.defaults`, or the new values are not
-picked up.
+The ESP-IDF project is in `fw/`, not the repository root. In VS Code with the Espressif extension, open
+`roundGauge.code-workspace` or the `fw` folder. Flash over the board's USB-C with the 12 V supply
+unplugged. After editing `fw/sdkconfig.defaults` or `fw/sdkconfig.board.*`, delete `fw/sdkconfig` so the
+new values are picked up.
 
-> 💡 **Windows:** if ESP-IDF was installed with EIM and the system Python is
-> newer than 3.11, `export.ps1` won't find its environment. Put the Python
-> bundled with IDF first in `PATH` before running it:
+The 1.28 is the default target. The original 2.1 board is still supported:
+`idf.py -D RG_BOARD=2_1 build` (start from a clean build directory).
+
+> 💡 **Windows:** if ESP-IDF was installed with EIM and the system Python is newer than 3.11,
+> `export.ps1` won't find its environment. Put the IDF Python first in `PATH`:
 > ```powershell
 > $env:PATH = "$env:USERPROFILE\.espressif\tools\idf-python\3.11.2;$env:PATH"; . $env:USERPROFILE\esp\v6.0\esp-idf\export.ps1
 > ```
 
-### First run
-
-After flashing, the screen shows five built-in screens: RPM (dial, carbon), COOLANT
-(ring, brushed metal), AFR (mixture, a dial on the HUD grid with a neon needle),
-SPEED (number, perforation) and the g-meter (HUD grid). Without a bus the values show `--`. To see
-them alive without a bus:
-
-1. **Hold button 1 for two seconds** — a card with the network name
-   (`roundGauge-XXXX`), the password (`roundgauge`) and the address appears.
-2. Connect to that network from a phone or laptop and open `http://192.168.4.1/`.
-3. **CAN** → turn on **"Demo"** → Apply. The values start moving.
-4. **Screens** — the look: drag widgets on the preview; "Apply to gauge" sends
-   the layout to the board immediately. **Sensor** — calibrating the accelerometer
-   for the g-force screen.
-5. **Media** — your own backgrounds, needles and fonts. **Access** — the settings password and the Wi-Fi name and password.
-
-### Controls
-
-| Action | Result |
-|---|---|
-| Button 1, short press | next screen (and silence a sound alert) |
-| Button 1, hold 2 s | Wi-Fi access point |
-| Button 1, hold 10 s | clear a forgotten settings password (a warning is shown 3 s before) |
-| Button 2 | brightness cycle: 100 → 60 → 30 → 10 → 100 % (remembered) |
-| Swipe left / right | next / previous screen |
-
-### Build options
-
-```bash
-idf.py -D RG_HAS_TOUCH=0 build   # a screen without a touch panel
-```
-
-The value lives in the build cache; to get touch back run
-`idf.py -D RG_HAS_TOUCH=1 reconfigure`. The FPS lines at the top of the screen are
-on in a normal build and off in the release build; by hand:
-`idf.py -D RG_UI_SHOW_FPS=0 build`.
-More in [docs/fw-design.md §10](docs/fw-design.md).
-
-## 📦 Release build
+### Release kit
 
 ```bash
 tools/build/build.sh        # Linux/macOS
 tools\build\build.bat       # Windows
 ```
 
-The script activates ESP-IDF by itself if needed, writes the version
-`0.<YY>.<MMDD>` to `fw/version.txt`, builds with WARN log level and puts a
-complete kit into `releases/roundGauge_v<version>_<time>/`: the firmware, the
-`www` and `media` images, bootloader, partition table, `ota_data_initial.bin`
-and `flash_args`, plus a **portable kit for flashing on the desk**: `esptool.exe`
-(downloaded once from GitHub into `tools/build/.cache`, the version is pinned in
-`tools/build/package_release.py`), `flash_all.bat` and `update_firmware.bat` (and `.sh`
-for Linux/macOS). Next to the folder there is a
-`releases/roundGauge_v<version>_<time>.zip` with the same contents: unpack it on any
-Windows PC, connect the board and run `flash_all.bat` — nothing to install
-(over Type-C, with the 12 V supply unplugged; pass the port if needed: `flash_all.bat COM5`).
+This builds into `releases/roundGauge_v<version>_<time>/` (and a `.zip`) with everything needed to flash
+on any PC without installing ESP-IDF: `flash_all.bat` (full flash) and `update_firmware.bat` (firmware
+and web interface only, keeps uploaded images), plus `.sh` versions. Screen layout, CAN table and
+settings live in NVS and survive both.
 
-- `flash_all.bat` — full flash (bootloader, partition table, firmware, web, media) at
-  460800. The `media` partition is replaced with the base set (images uploaded through
-  the web disappear); the screen layout, the CAN table, the settings and the password
-  live in NVS and are kept.
-- `update_firmware.bat` — only the firmware and the web interface: images and fonts in
-  `media` are kept.
-
-By hand the same is done with:
-
-```bash
-python -m esptool --chip esp32s3 -b 460800 --before default-reset --after hard-reset write-flash "@flash_args"
-```
-
-## 🌐 Web interface without hardware
+### Web interface without hardware
 
 ```bash
 python tools/webtest/mock_server.py
 ```
 
-Open `http://localhost:8088/`. The server serves `fw/www` as is and emulates
-the board's API, including CAN with fake frames — see
-[tools/webtest/README.md](tools/webtest/README.md).
+Open `http://localhost:8088/`. It serves `fw/www` and fakes the board's API, including CAN frames.
 
-## 🧩 Third-party code
+## Differences from the 2.1 original
+
+| | 2.1 (upstream) | 1.28 (this port) |
+|---|---|---|
+| Screen | 480×480 RGB | 240×240 SPI |
+| Fonts and backgrounds | image set in `fw/media` | built-in fonts, plain backgrounds (the media set is drawn for 480 px) |
+| microSD logging | yes | no (no card slot) |
+| Buzzer alerts | yes | no (no buzzer) |
+| Buttons | two on J9 | BOOT key (plus optional external button on P2.4) |
+| CAN pins | GPIO19 / GPIO20 | GPIO17 / GPIO18 |
+
+All pin numbers live in `fw/common/board/board.h`. The 1.28 board code is
+`fw/common/board/board_1_28.c`. Firmware design notes from upstream: [docs/fw-design.md](docs/fw-design.md).
+
+## Repository layout
+
+```
+├── fw/                 firmware (ESP-IDF project)
+│   ├── main/           initialization and task startup
+│   ├── tasks/          one component per task: can, ui, buttons, touch, imu, sound, logger, webcfg
+│   ├── common/         board (pins, screen, touch), config (settings, layout, CAN table), signals
+│   ├── www/            web interface → www partition
+│   └── media/          base image set → media partition
+├── docs/fw-design.md   firmware design notes (upstream)
+├── hw/                 2.1 board schematic and datasheets (upstream)
+└── tools/              release build, flashing kit, web mock server
+```
+
+## Status
+
+Working on the bench and with demo data: display, touch, swipes, CAN reception, web interface. In-car
+testing on a rusEFI uaEFI Pro is in progress. Issues and pull requests are welcome.
+
+## Credits and third-party code
+
+Original firmware: **[Light-r4y/roundDash_2.1](https://github.com/Light-r4y/roundDash_2.1)**,
+© 2026 Light-r4y, MIT. The upstream README (Russian) is kept as [README_ru.md](README_ru.md); it
+describes the 2.1 board.
 
 | What | Where | License |
 |---|---|---|
-| ST7701 init sequence and timings by Waveshare from [ESP32_Display_Panel](https://github.com/esp-arduino-libs/ESP32_Display_Panel) | `fw/common/board/st7701_init.h` | Apache-2.0 |
+| ST7701 init sequence by Waveshare from [ESP32_Display_Panel](https://github.com/esp-arduino-libs/ESP32_Display_Panel) (2.1 build) | `fw/common/board/st7701_init.h` | Apache-2.0 |
 | [Alpine.js](https://alpinejs.dev) 3.14.1 | `fw/www/alpine.min.js` | MIT |
 | [Bootstrap](https://getbootstrap.com) 5.3.0 | `fw/www/bootstrap.min.css` | MIT |
-| Segment7 (Cedders, 2014), as LVGL fonts at 40/72/120 px | `fw/media/seg7_*.fnt` | SIL OFL 1.1 |
-| Background `bg_carbon.bin`: [Carbon Fiber](https://cc0-textures.com/t/st-carbon-fiber) texture (ShareTextures, M. Tolga Arslan), processed | `fw/media/bg_carbon.bin` | CC0 |
-| Orbitron, Michroma, Russo One, Jura ([Google Fonts](https://fonts.google.com)), as LVGL fonts; digit width equalized | `fw/media/orbitron_*.fnt`, `michroma_*.fnt`, `russo_*.fnt`, `jura_*.fnt` | SIL OFL 1.1 |
-| Black Ops One (Black-Ops Project Authors), modified: outlines slanted 24°, digit width equalized, as LVGL fonts | `fw/media/blackops_*.fnt` | SIL OFL 1.1 |
+| Segment7 (Cedders, 2014) as LVGL fonts | `fw/media/seg7_*.fnt` | SIL OFL 1.1 |
+| [Carbon Fiber](https://cc0-textures.com/t/st-carbon-fiber) texture (ShareTextures, M. Tolga Arslan) | `fw/media/bg_carbon.bin` | CC0 |
+| Orbitron, Michroma, Russo One, Jura ([Google Fonts](https://fonts.google.com)) as LVGL fonts | `fw/media/*.fnt` | SIL OFL 1.1 |
+| Black Ops One (Black-Ops Project Authors), modified | `fw/media/blackops_*.fnt` | SIL OFL 1.1 |
 | [Font Awesome Free](https://fontawesome.com) 6.4.0 | `fw/www/fontawesome/` | icons CC BY 4.0, font SIL OFL 1.1, code MIT |
 
-LVGL (MIT) and Espressif components (Apache-2.0) are downloaded at build time
-and are not stored in the repository.
+LVGL (MIT) and Espressif components (Apache-2.0) are downloaded at build time.
 
-## 📄 License
+## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). Keep the copyright notice when you redistribute.
